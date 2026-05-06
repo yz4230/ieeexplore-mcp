@@ -17,13 +17,13 @@ type searchInput struct {
 }
 
 type searchResultEntry struct {
-	Title         string   `json:"title"`
-	Authors       []string `json:"authors"`
-	Abstract      string   `json:"abstract"`
-	Publication   string   `json:"publication"`
-	Year          string   `json:"year"`
-	DOI           string   `json:"doi"`
-	ArticleNumber string   `json:"articleNumber"`
+	Title       string   `json:"title"`
+	Authors     []string `json:"authors"`
+	Abstract    string   `json:"abstract"`
+	Publication string   `json:"publication"`
+	Year        string   `json:"year"`
+	DOI         string   `json:"doi"`
+	ID          string   `json:"id"`
 }
 
 type searchResult struct {
@@ -69,13 +69,13 @@ func main() {
 				authors = append(authors, author.PreferredName)
 			}
 			entry := searchResultEntry{
-				Title:         record.ArticleTitle,
-				Authors:       authors,
-				Abstract:      record.Abstract,
-				Publication:   record.PublicationTitle,
-				Year:          record.PublicationYear,
-				DOI:           record.DOI,
-				ArticleNumber: record.ArticleNumber,
+				Title:       record.ArticleTitle,
+				Authors:     authors,
+				Abstract:    record.Abstract,
+				Publication: record.PublicationTitle,
+				Year:        record.PublicationYear,
+				DOI:         record.DOI,
+				ID:          record.ArticleNumber,
 			}
 			res.Entries = append(res.Entries, entry)
 		}
