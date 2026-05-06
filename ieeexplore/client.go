@@ -56,6 +56,7 @@ func (c *Client) Search(query string) (*SearchResult, error) {
 		return nil, fmt.Errorf("create request: %w", err)
 	}
 	setSearchHeaders(req)
+	req.Header.Set("content-type", "application/json")
 
 	resp, err := c.http.Do(req)
 	if err != nil {
