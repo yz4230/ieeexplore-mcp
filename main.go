@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -41,10 +42,14 @@ type getArticleResult struct {
 }
 
 func main() {
+	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	server := mcp.NewServer(&mcp.Implementation{
-		Name:    "IEEE Xplore Search",
+		Name:    "ieeexplore-search",
+		Title:   "IEEE Xplore Search MCP",
 		Version: "0.1",
-	}, nil)
+	}, &mcp.ServerOptions{
+		Logger: logger,
+	})
 
 	client := ieeexplore.NewClient()
 
@@ -99,6 +104,8 @@ func main() {
 	if port != "" {
 		addr = fmt.Sprintf(":%s", port)
 	}
+
+	fmt.Printf("Starting server at %s...\n", addr)
 
 	handler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server { return server }, nil)
 	if err := http.ListenAndServe(addr, handler); err != nil {
