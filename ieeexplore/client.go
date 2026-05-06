@@ -45,7 +45,7 @@ func (c *Client) Search(query string) (*SearchResult, error) {
 		ReturnFacets: []string{"ALL"},
 		ReturnType:   "SEARCH",
 		MatchPubs:    true,
-		RowsPerPage:  25,
+		RowsPerPage:  100,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("marshal request: %w", err)
