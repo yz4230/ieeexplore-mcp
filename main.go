@@ -53,7 +53,9 @@ func main() {
 
 	server.AddReceivingMiddleware(func(mh mcp.MethodHandler) mcp.MethodHandler {
 		return func(ctx context.Context, method string, req mcp.Request) (result mcp.Result, err error) {
-			logger.Info("Tool called", "method", method)
+			if ctr, ok := req.(*mcp.CallToolRequest); ok {
+				logger.Info("Tool called", "method", ctr.Params.Name, "input", string(ctr.Params.Arguments))
+			}
 			return mh(ctx, method, req)
 		}
 	})
