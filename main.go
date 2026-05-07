@@ -112,7 +112,7 @@ func main() {
 		addr = fmt.Sprintf(":%s", port)
 	}
 
-	fmt.Printf("Starting server at %s...\n", addr)
+	logger.Info("Starting server", "addr", addr)
 
 	handler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server { return server }, nil)
 	if err := http.ListenAndServe(addr, handler); err != nil {
