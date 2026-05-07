@@ -51,6 +51,13 @@ func main() {
 		Logger: logger,
 	})
 
+	server.AddReceivingMiddleware(func(mh mcp.MethodHandler) mcp.MethodHandler {
+		return func(ctx context.Context, method string, req mcp.Request) (result mcp.Result, err error) {
+			logger.Info("Tool called", "method", method)
+			return mh(ctx, method, req)
+		}
+	})
+
 	client := ieeexplore.NewClient()
 
 	mcp.AddTool(server, &mcp.Tool{
