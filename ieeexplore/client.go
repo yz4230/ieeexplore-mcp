@@ -80,9 +80,14 @@ func (c *Client) Search(query string) (*SearchResult, error) {
 }
 
 type Article struct {
-	ID       string
-	Abstract string
-	Content  string
+	ID          string   `json:"id"`
+	Title       string   `json:"title"`
+	Authors     []string `json:"authors"`
+	Publication string   `json:"publication"`
+	Year        string   `json:"year"`
+	DOI         string   `json:"doi"`
+	Abstract    string   `json:"abstract"`
+	Content     string   `json:"content"`
 }
 
 func (c *Client) GetArticle(id string) (*Article, error) {
@@ -105,16 +110,49 @@ func (c *Client) GetArticle(id string) (*Article, error) {
 		return nil, fmt.Errorf("parse article page: %w", err)
 	}
 
-	abstract := strings.TrimSpace(doc.Find("meta[property='og:description']").AttrOr("content", ""))
+	var metadataJSON string
+	const prefix = "xplGlobal.document.metadata="
+	doc.Find("script").EachWithBreak(func(i int, s *goquery.Selection) bool {
+		scriptContent := s.Text()
+		for line := range strings.Lines(scriptContent) {
+			line = strings.TrimSpace(line)
+			if content, ok := strings.CutPrefix(line, prefix); ok {
+				if content, ok = strings.CutSuffix(content, ";"); ok {
+					metadataJSON = content
+				}
+			}
+		}
+		return true
+	})
+
+	if metadataJSON == "" {
+		return nil, fmt.Errorf("metadata not found in article page")
+	}
+
+	var metadata XPLGlobal
+	if err = json.Unmarshal([]byte(metadataJSON), &metadata); err != nil {
+		return nil, fmt.Errorf("decode metadata JSON: %w", err)
+	}
+
+	authors := make([]string, 0, len(metadata.Authors))
+	for _, author := range metadata.Authors {
+		authors = append(authors, author.Name)
+	}
+
 	content, err := c.fetchArticleContent(id)
 	if err != nil {
 		return nil, fmt.Errorf("fetch article content: %w", err)
 	}
 
 	return &Article{
-		ID:       id,
-		Abstract: abstract,
-		Content:  content,
+		ID:          id,
+		Title:       metadata.Title,
+		Authors:     authors,
+		Publication: metadata.PublicationTitle,
+		Year:        metadata.PublicationYear,
+		DOI:         metadata.DOI,
+		Abstract:    metadata.Abstract,
+		Content:     content,
 	}, nil
 }
 

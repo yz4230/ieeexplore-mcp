@@ -17,13 +17,13 @@ type searchInput struct {
 }
 
 type searchResultEntry struct {
+	ID          string   `json:"id"`
 	Title       string   `json:"title"`
 	Authors     []string `json:"authors"`
-	Abstract    string   `json:"abstract"`
 	Publication string   `json:"publication"`
 	Year        string   `json:"year"`
 	DOI         string   `json:"doi"`
-	ID          string   `json:"id"`
+	Abstract    string   `json:"abstract"`
 }
 
 type searchResult struct {
@@ -36,9 +36,14 @@ type getArticleInput struct {
 }
 
 type getArticleResult struct {
-	ID       string `json:"id"`
-	Abstract string `json:"abstract"`
-	Content  string `json:"content"`
+	ID          string   `json:"id"`
+	Title       string   `json:"title"`
+	Authors     []string `json:"authors"`
+	Publication string   `json:"publication"`
+	Year        string   `json:"year"`
+	DOI         string   `json:"doi"`
+	Abstract    string   `json:"abstract"`
+	Content     string   `json:"content"`
 }
 
 func main() {
@@ -64,7 +69,11 @@ func main() {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "search",
-		Description: "Search IEEE Xplore papers.",
+		Description: "Search IEEE Xplore with a query and return a list of articles.",
+		Annotations: &mcp.ToolAnnotations{
+			ReadOnlyHint:    true,
+			DestructiveHint: new(false),
+		},
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input searchInput) (*mcp.CallToolResult, searchResult, error) {
 		result, err := client.Search(input.Query)
 		if err != nil {
@@ -73,18 +82,18 @@ func main() {
 		var res searchResult
 		res.TotalEntries = result.TotalRecords
 		for _, record := range result.Records {
-			var authors []string
+			authors := make([]string, 0, len(record.Authors))
 			for _, author := range record.Authors {
 				authors = append(authors, author.PreferredName)
 			}
 			entry := searchResultEntry{
+				ID:          record.ArticleNumber,
 				Title:       record.ArticleTitle,
 				Authors:     authors,
-				Abstract:    record.Abstract,
 				Publication: record.PublicationTitle,
 				Year:        record.PublicationYear,
 				DOI:         record.DOI,
-				ID:          record.ArticleNumber,
+				Abstract:    record.Abstract,
 			}
 			res.Entries = append(res.Entries, entry)
 		}
@@ -93,17 +102,26 @@ func main() {
 	})
 
 	mcp.AddTool(server, &mcp.Tool{
-		Name:        "getArticle",
-		Description: "Get detailed information of an article by its ID.",
+		Name:        "get_article",
+		Description: "Get single article and its content by article ID.",
+		Annotations: &mcp.ToolAnnotations{
+			ReadOnlyHint:    true,
+			DestructiveHint: new(false),
+		},
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input getArticleInput) (*mcp.CallToolResult, getArticleResult, error) {
 		article, err := client.GetArticle(input.ID)
 		if err != nil {
 			return nil, getArticleResult{}, err
 		}
 		res := getArticleResult{
-			ID:       input.ID,
-			Abstract: article.Abstract,
-			Content:  article.Content,
+			ID:          article.ID,
+			Title:       article.Title,
+			Authors:     article.Authors,
+			Publication: article.Publication,
+			Year:        article.Year,
+			DOI:         article.DOI,
+			Abstract:    article.Abstract,
+			Content:     article.Content,
 		}
 		return nil, res, nil
 	})
