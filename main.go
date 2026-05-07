@@ -14,6 +14,7 @@ import (
 
 type searchInput struct {
 	Query string `json:"query" jsonschema:"search query for IEEE Xplore"`
+	Page  int    `json:"page,omitempty" jsonschema:"page number for pagination, starting from 1 and default to 1"`
 }
 
 type searchResultEntry struct {
@@ -27,8 +28,10 @@ type searchResultEntry struct {
 }
 
 type searchResult struct {
-	TotalEntries int                 `json:"totalEntries"`
-	Entries      []searchResultEntry `json:"entries"`
+	CurrentPage   int                 `json:"current_page"`
+	TotalPages    int                 `json:"total_pages"`
+	TotalArticles int                 `json:"total_articles"`
+	Articles      []searchResultEntry `json:"articles"`
 }
 
 type getArticleInput struct {
@@ -75,12 +78,18 @@ func main() {
 			DestructiveHint: new(false),
 		},
 	}, func(ctx context.Context, req *mcp.CallToolRequest, input searchInput) (*mcp.CallToolResult, searchResult, error) {
-		result, err := client.Search(input.Query)
+		if input.Page == 0 {
+			input.Page = 1
+		}
+		result, err := client.Search(input.Query, input.Page)
 		if err != nil {
 			return nil, searchResult{}, err
 		}
 		var res searchResult
-		res.TotalEntries = result.TotalRecords
+		res.Articles = make([]searchResultEntry, 0, len(result.Records))
+		res.CurrentPage = input.Page
+		res.TotalPages = result.TotalPages
+		res.TotalArticles = result.TotalRecords
 		for _, record := range result.Records {
 			authors := make([]string, 0, len(record.Authors))
 			for _, author := range record.Authors {
@@ -95,7 +104,7 @@ func main() {
 				DOI:         record.DOI,
 				Abstract:    record.Abstract,
 			}
-			res.Entries = append(res.Entries, entry)
+			res.Articles = append(res.Articles, entry)
 		}
 
 		return nil, res, nil

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 
 	htmltomarkdown "github.com/JohannesKaufmann/html-to-markdown/v2"
@@ -22,7 +23,7 @@ func NewClient() *Client {
 	}
 }
 
-type searchRequest struct {
+type searchParams struct {
 	NewSearch    bool     `json:"newsearch"`
 	QueryText    string   `json:"queryText"`
 	Highlight    bool     `json:"highlight"`
@@ -30,15 +31,16 @@ type searchRequest struct {
 	ReturnType   string   `json:"returnType"`
 	MatchPubs    bool     `json:"matchPubs"`
 	RowsPerPage  int      `json:"rowsPerPage"`
+	PageNumber   *string  `json:"pageNumber,omitempty"`
 }
 
-func (c *Client) Search(query string) (*SearchResult, error) {
+func (c *Client) Search(query string, page int) (*SearchResult, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil, fmt.Errorf("query must not be empty")
 	}
 
-	payload, err := json.Marshal(searchRequest{
+	params := searchParams{
 		NewSearch:    true,
 		QueryText:    query,
 		Highlight:    false,
@@ -46,7 +48,12 @@ func (c *Client) Search(query string) (*SearchResult, error) {
 		ReturnType:   "SEARCH",
 		MatchPubs:    true,
 		RowsPerPage:  100,
-	})
+	}
+	if page > 1 {
+		params.PageNumber = new(strconv.Itoa(page))
+	}
+
+	payload, err := json.Marshal(params)
 	if err != nil {
 		return nil, fmt.Errorf("marshal request: %w", err)
 	}
