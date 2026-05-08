@@ -13,8 +13,9 @@ import (
 )
 
 type searchInput struct {
-	Query string `json:"query" jsonschema:"search query for IEEE Xplore"`
-	Page  int    `json:"page,omitempty" jsonschema:"page number for pagination, starting from 1 and default to 1"`
+	Query           string `json:"query" jsonschema:"search query for IEEE Xplore"`
+	Page            int    `json:"page,omitempty" jsonschema:"page number for pagination, starting from 1 and default to 1"`
+	ArticlesPerPage int    `json:"articlesPerPage,omitempty" jsonschema:"number of articles per page, default to 10"`
 }
 
 type searchResultEntry struct {
@@ -81,7 +82,10 @@ func main() {
 		if input.Page == 0 {
 			input.Page = 1
 		}
-		result, err := client.Search(input.Query, input.Page)
+		if input.ArticlesPerPage == 0 {
+			input.ArticlesPerPage = 10
+		}
+		result, err := client.Search(input.Query, input.Page, input.ArticlesPerPage)
 		if err != nil {
 			return nil, searchResult{}, err
 		}

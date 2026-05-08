@@ -34,10 +34,13 @@ type searchParams struct {
 	PageNumber   *string  `json:"pageNumber,omitempty"`
 }
 
-func (c *Client) Search(query string, page int) (*SearchResult, error) {
+func (c *Client) Search(query string, page int, articlesPerPage int) (*SearchResult, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil, fmt.Errorf("query must not be empty")
+	}
+	if articlesPerPage == 0 {
+		articlesPerPage = 10
 	}
 
 	params := searchParams{
@@ -47,7 +50,7 @@ func (c *Client) Search(query string, page int) (*SearchResult, error) {
 		ReturnFacets: []string{"ALL"},
 		ReturnType:   "SEARCH",
 		MatchPubs:    true,
-		RowsPerPage:  100,
+		RowsPerPage:  articlesPerPage,
 	}
 	if page > 1 {
 		params.PageNumber = new(strconv.Itoa(page))
