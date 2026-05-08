@@ -17,6 +17,8 @@ type Client struct {
 	http *http.Client
 }
 
+const DefaultArticlesPerPage = 25
+
 func NewClient() *Client {
 	return &Client{
 		http: http.DefaultClient,
@@ -40,7 +42,7 @@ func (c *Client) Search(query string, page int, articlesPerPage int) (*SearchRes
 		return nil, fmt.Errorf("query must not be empty")
 	}
 	if articlesPerPage == 0 {
-		articlesPerPage = 10
+		articlesPerPage = DefaultArticlesPerPage
 	}
 
 	params := searchParams{
