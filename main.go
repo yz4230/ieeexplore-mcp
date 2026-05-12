@@ -13,7 +13,7 @@ import (
 )
 
 type searchInput struct {
-	Query           string `json:"query" jsonschema:"search query for IEEE Xplore"`
+	Query           string `json:"query" jsonschema:"IEEE Xplore query text; multiple bare terms are generally matched conjunctively, and quoted phrases or IEEE-supported operators may be used"`
 	Page            int    `json:"page,omitempty" jsonschema:"page number for pagination, starting from 1 and default to 1"`
 	ArticlesPerPage int    `json:"articlesPerPage,omitempty" jsonschema:"number of articles per page, default to 25"`
 }
@@ -36,7 +36,7 @@ type searchResult struct {
 }
 
 type getArticleInput struct {
-	ID string `json:"id" jsonschema:"article ID"`
+	ID string `json:"id" jsonschema:"IEEE Xplore document/article number, usually the id returned by search; not a DOI"`
 }
 
 type getArticleResult struct {
@@ -73,7 +73,7 @@ func main() {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "search",
-		Description: "Search IEEE Xplore with a query and return a list of articles.",
+		Description: "Search IEEE Xplore by query text and return article metadata. Use get_article with a returned id to fetch available article content.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    true,
 			DestructiveHint: new(false),
@@ -116,7 +116,7 @@ func main() {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "get_article",
-		Description: "Get single article and its content by article ID.",
+		Description: "Fetch metadata and available article page content as Markdown for an IEEE Xplore document/article number.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    true,
 			DestructiveHint: new(false),
