@@ -13,7 +13,7 @@ import (
 )
 
 type searchInput struct {
-	Query           string `json:"query" jsonschema:"IEEE Xplore query text; multiple bare terms are generally matched conjunctively, and quoted phrases or IEEE-supported operators may be used"`
+	Query           string `json:"query" jsonschema:"IEEE Xplore query text; multiple bare terms are generally matched conjunctively"`
 	Page            int    `json:"page,omitempty" jsonschema:"page number for pagination, starting from 1 and default to 1"`
 	ArticlesPerPage int    `json:"articlesPerPage,omitempty" jsonschema:"number of articles per page, default to 25"`
 }
@@ -72,8 +72,10 @@ func main() {
 	client := ieeexplore.NewClient()
 
 	mcp.AddTool(server, &mcp.Tool{
-		Name:        "search",
-		Description: "Search IEEE Xplore and return article metadata. Use short keyword queries, typically 2-6 essential technical terms, not long natural-language questions. Use get_article with a returned id to fetch available article content.",
+		Name: "search",
+		Description: "Search IEEE Xplore and return article metadata. " +
+			"Use short keyword queries, typically 2-6 essential technical terms, not long natural-language questions. " +
+			"Use get_article with a returned id to fetch available article content.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    true,
 			DestructiveHint: new(false),
