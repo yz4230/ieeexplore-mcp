@@ -73,7 +73,7 @@ func main() {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "search",
-		Description: "Search IEEE Xplore by query text and return article metadata. Use get_article with a returned id to fetch available article content.",
+		Description: "Search IEEE Xplore and return article metadata. Use short keyword queries, typically 2-6 essential technical terms, not long natural-language questions. Use get_article with a returned id to fetch available article content.",
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    true,
 			DestructiveHint: new(false),
