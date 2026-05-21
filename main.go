@@ -13,9 +13,9 @@ import (
 )
 
 type searchInput struct {
-	Query           string `json:"query" jsonschema:"IEEE Xplore query text; multiple bare terms are generally matched conjunctively"`
-	Page            int    `json:"page,omitempty" jsonschema:"page number for pagination, starting from 1 and default to 1"`
-	ArticlesPerPage int    `json:"articlesPerPage,omitempty" jsonschema:"number of articles per page, default to 25"`
+	Query           string `json:"query" jsonschema:"Short IEEE Xplore search terms, usually 2-6 technical keywords"`
+	Page            int    `json:"page,omitempty" jsonschema:"Pagination page number, starting at 1"`
+	ArticlesPerPage int    `json:"articlesPerPage,omitempty" jsonschema:"How many articles to return per page, default 25"`
 }
 
 type searchResultEntry struct {
@@ -36,7 +36,7 @@ type searchResult struct {
 }
 
 type getArticleInput struct {
-	ID string `json:"id" jsonschema:"IEEE Xplore document/article number, usually the id returned by search; not a DOI"`
+	ID string `json:"id" jsonschema:"IEEE Xplore document number from search results, not a DOI"`
 }
 
 type getArticleResult struct {
@@ -50,6 +50,22 @@ type getArticleResult struct {
 	Content     string   `json:"content"`
 }
 
+const (
+	searchToolDescription = "Search IEEE Xplore for papers and return concise metadata. " +
+		"Use this first for discovery, related-work lookups, and title matching. " +
+		"Keep queries short and technical, usually 2-6 essential keywords rather than full natural-language questions. " +
+		"If the user knows only a title or topic, search first to identify the IEEE document number. " +
+		"Use get_article with a returned id when you need the abstract, metadata, or available article page content."
+	getArticleToolDescription = "Fetch metadata and available article page content as Markdown for an IEEE Xplore document number. " +
+		"Use the id returned by search, not a DOI. " +
+		"Prefer this after search when the user wants to read or summarize a specific paper."
+	serverInstructions = "Use search for paper discovery and get_article for full article details.\n" +
+		"Search queries should be short, technical keyword phrases rather than long questions.\n" +
+		"When a user provides only a title or topic, search first to resolve the IEEE document number.\n" +
+		"The get_article id is the IEEE document/article number returned by search, not a DOI.\n" +
+		"When summarizing results, preserve the article id, DOI, publication, and year."
+)
+
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelDebug}))
 	server := mcp.NewServer(&mcp.Implementation{
@@ -57,7 +73,8 @@ func main() {
 		Title:   "IEEE Xplore Search MCP",
 		Version: "0.1",
 	}, &mcp.ServerOptions{
-		Logger: logger,
+		Instructions: serverInstructions,
+		Logger:       logger,
 	})
 
 	server.AddReceivingMiddleware(func(mh mcp.MethodHandler) mcp.MethodHandler {
@@ -72,10 +89,9 @@ func main() {
 	client := ieeexplore.NewClient()
 
 	mcp.AddTool(server, &mcp.Tool{
-		Name: "search",
-		Description: "Search IEEE Xplore and return article metadata. " +
-			"Use short keyword queries, typically 2-6 essential technical terms, not long natural-language questions. " +
-			"Use get_article with a returned id to fetch available article content.",
+		Name:        "search",
+		Title:       "IEEE Xplore Search",
+		Description: searchToolDescription,
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    true,
 			DestructiveHint: new(false),
@@ -118,7 +134,8 @@ func main() {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "get_article",
-		Description: "Fetch metadata and available article page content as Markdown for an IEEE Xplore document/article number.",
+		Title:       "Get IEEE Xplore Article",
+		Description: getArticleToolDescription,
 		Annotations: &mcp.ToolAnnotations{
 			ReadOnlyHint:    true,
 			DestructiveHint: new(false),
