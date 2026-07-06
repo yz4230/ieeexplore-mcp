@@ -7,7 +7,7 @@ This repository is a Go MCP server for IEEE Xplore search and article retrieval.
 - `main.go` defines the MCP server, HTTP transport, schemas, and response mapping.
 - `ieeexplore/client.go` contains the IEEE Xplore HTTP client, headers, parsing, and HTML-to-Markdown conversion.
 - `ieeexplore/schema.go` defines structs for IEEE Xplore metadata and search responses.
-- `Dockerfile` and `Makefile` provide the container path.
+- `Dockerfile` and `mise-tasks/docker/` provide the container path.
 - `tmp/` is scratch output, not source.
 
 Keep domain logic inside `ieeexplore/` unless it is MCP wiring or startup behavior.
@@ -18,8 +18,8 @@ Keep domain logic inside `ieeexplore/` unless it is MCP wiring or startup behavi
 - `go test ./...` runs all Go tests.
 - `go fmt ./...` formats Go files using the standard formatter.
 - `go vet ./...` runs static checks.
-- `make build` builds the Docker image tagged `ieeexplore-mcp`.
-- `make run` builds and starts the Docker container on host port `8080`.
+- `mise run docker:build` builds the Docker image tagged `ieeexplore-mcp`.
+- `mise run docker:run` builds and starts the Docker container on host port `8080`.
 
 ## Coding Style & Naming Conventions
 
