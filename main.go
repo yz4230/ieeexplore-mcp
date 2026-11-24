@@ -166,7 +166,13 @@ func main() {
 
 	logger.Info("Starting server", "addr", addr)
 
-	handler := mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server { return server }, nil)
+	// Stateless is required to negotiate protocol 2026-07-28, which
+	// clients such as ChatGPT use exclusively. No tool relies on a session.
+	handler, err := withAuth(mcp.NewStreamableHTTPHandler(func(r *http.Request) *mcp.Server { return server },
+		&mcp.StreamableHTTPOptions{Stateless: true}))
+	if err != nil {
+		log.Fatal(err)
+	}
 	if err := http.ListenAndServe(addr, handler); err != nil {
 		log.Fatal(err)
 	}

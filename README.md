@@ -69,6 +69,19 @@ go fmt ./...
 go build -o server .
 ```
 
+## OAuth
+
+Set both `MCP_PASSWORD` and `MCP_PUBLIC_URL` to protect `/mcp` with OAuth from [mcpauth](https://github.com/yz4230/mcpauth). Connecting from a ChatGPT or Claude connector then shows a password page. With neither set the server runs unauthenticated; setting only one is an error.
+
+| Variable | Default | Description |
+|---|---|---|
+| `MCP_PASSWORD` | none | Password for the login page |
+| `MCP_PUBLIC_URL` | none | Public base URL as clients see it, e.g. `https://mcp.example.com` |
+| `MCP_STATE_FILE` | `oauth_state.json` (`/data/oauth_state.json` in Docker) | Where registered clients and tokens are kept |
+| `MCP_REDIRECT_URIS` | none | Comma-separated redirect URIs to allow besides ChatGPT's and Claude's |
+
+`docker:run` reads `.env` when present and mounts the `<CONTAINER_NAME>-data` volume at `/data`, so tokens survive recreating the container.
+
 ## Docker
 
 Build and run with Docker:
